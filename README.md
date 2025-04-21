@@ -260,7 +260,7 @@ GitOps aplicado à gestão de chaves e permissões SSH, com versionamento, autom
 ### 🌐 2. Rede Overlay Segura com Nebula  
 **Stack**: Nebula, Bash, Vault  
 **Abordagem**:  
-GitOps de redes privadas com distribuição de certificados e rotas baseada em GitOps. 
+GitOps aplicado à gestão de rede de gerência com distribuição de certificados e rotas. 
   
 **Impacto**:  
 -  Comunicação Zero-Trust entre ambientes multi-cloud  
