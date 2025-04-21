@@ -1,0 +1,63 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: network-monitor-postgres
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - monitoring-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: network-monitor-grafana
+    env_file: .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana_data:/var/lib/grafana
+    networks:
+      - monitoring-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web-agent:
+    build: ./web-agent
+    container_name: network-monitor-web-agent
+    env_file: .env
+    networks:
+      - monitoring-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "web_monitor"]
+      interval: 5s
+
+  traffic-monitor:
+    build: ./traffic-monitor
+    container_name: network-monitor-traffic-monitor
+    env_file: .env
+    networks:
+      - monitoring-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "traffic_monitor"]
+      interval: 5s
+
+volumes:
+  postgres_data:
+  grafana_data:
+
+networks:
+  monitoring-net:
